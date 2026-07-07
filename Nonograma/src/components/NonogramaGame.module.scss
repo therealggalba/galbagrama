@@ -1,0 +1,955 @@
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.3; }
+}
+
+@keyframes pulse-glow {
+  0%, 100% { transform: scale(1); filter: brightness(1); }
+  50% { transform: scale(1.01); filter: brightness(1.15); }
+}
+
+.container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  height: 100vh;
+  height: 100dvh;
+  background: radial-gradient(circle, #1a153a 0%, #080512 100%);
+  padding: 10px;
+  box-sizing: border-box;
+  color: #f1f5f9;
+  overflow: hidden;
+  position: relative;
+}
+
+// Estructura adaptada: en lugar de una consola de mano pequeña,
+// ahora ocupa todo el alto y ancho posible de la pantalla,
+// integrando los botones de Game Boy en los márgenes/fondo.
+.gameBoyFrame {
+  width: 100%;
+  max-width: 1400px;
+  height: 100%;
+  max-height: 96vh;
+  background: linear-gradient(135deg, #2e1065 0%, #1e1b4b 100%);
+  border-radius: 16px;
+  box-shadow: 
+    0 20px 40px rgba(0, 0, 0, 0.8),
+    inset 0 2px 4px rgba(255, 255, 255, 0.1);
+  padding: 15px;
+  display: grid;
+  grid-template-columns: 140px 1fr 140px;
+  grid-template-rows: 1fr;
+  align-items: center;
+  border: 3px solid #4c1d95;
+  box-sizing: border-box;
+  position: relative;
+  user-select: none;
+  gap: 15px;
+
+  // En pantallas verticales o móviles, apilamos verticalmente
+  @media (max-width: 900px) {
+    grid-template-columns: 1fr;
+    grid-template-rows: 1fr auto;
+    gap: 10px;
+    max-height: 100%;
+    padding: 10px;
+  }
+}
+
+// Bisel de la Pantalla (Ocupa el centro y se expande al máximo)
+.screenBezel {
+  grid-column: 2;
+  grid-row: 1;
+  width: 100%;
+  height: 100%;
+  background-color: #1e1e24;
+  border-radius: 8px;
+  border: 3px solid #111827;
+  padding: 10px;
+  box-shadow: inset 0 4px 8px rgba(0, 0, 0, 0.6);
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+
+  @media (max-width: 900px) {
+    grid-column: 1;
+    grid-row: 1;
+  }
+}
+
+.screenHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 6px;
+  padding: 0 4px;
+}
+
+.powerLedContainer {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.powerLed {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background-color: #3f3f46;
+  border: 1px solid #18181b;
+
+  &.ledOn {
+    background-color: #ef4444;
+    box-shadow: 0 0 6px #f87171, 0 0 12px #ef4444;
+  }
+}
+
+.powerLabel {
+  font-size: 7px;
+  font-family: 'Courier New', Courier, monospace;
+  color: #a1a1aa;
+  letter-spacing: 0.5px;
+}
+
+.screenTitle {
+  font-family: 'Arial Black', sans-serif;
+  font-size: 11px;
+  font-style: italic;
+  font-weight: 900;
+  letter-spacing: 1px;
+  display: flex;
+  align-items: center;
+  
+  .titleBlue { color: #3b82f6; }
+  .titleRed { color: #ef4444; }
+  .titleYellow { color: #eab308; }
+  .titleGreen { color: #22c55e; }
+  .titlePurple { color: #a855f7; }
+  .titleThin {
+    color: #f4f4f5;
+    font-size: 8px;
+    font-family: 'Impact', sans-serif;
+    margin-left: 2px;
+  }
+}
+
+// Pantalla LCD interactiva gigante
+.screenContent {
+  width: 100%;
+  flex-grow: 1;
+  background-color: #0f1a12; // Verde oliva oscuro
+  border: 2px solid #080d09;
+  box-shadow: inset 0 3px 6px rgba(0, 0, 0, 0.7);
+  border-radius: 4px;
+  overflow: hidden;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  transition: filter 0.05s ease, transform 0.05s ease;
+
+  &.screenGlitchActive {
+    filter: brightness(1.4) contrast(1.2) hue-rotate(10deg);
+    transform: translate(2px, -1px);
+  }
+}
+
+/* MENÚ PRINCIPAL */
+.menuScreen {
+  width: 100%;
+  height: 100%;
+  padding: 20px;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  background-color: #0d160f;
+  font-family: 'Courier New', Courier, monospace;
+  color: #a8ffb2;
+  text-shadow: 0 0 2px rgba(168, 255, 178, 0.3);
+  overflow-y: auto;
+}
+
+.menuTitle {
+  font-size: 24px;
+  text-align: center;
+  margin: 10px 0;
+  letter-spacing: 2px;
+  color: #a8ffb2;
+  font-weight: bold;
+  animation: blink 2.5s infinite step-end;
+}
+
+.menuContent {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  gap: 20px;
+  flex-grow: 1;
+  justify-content: center;
+  align-items: center;
+  margin: 10px 0;
+
+  @media (max-width: 600px) {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+  }
+}
+
+.modeSection {
+  flex: 1 1 240px;
+  max-width: 320px;
+  display: flex;
+  flex-direction: column;
+}
+
+.sectionLabel {
+  font-size: 12px;
+  text-transform: uppercase;
+  margin-bottom: 6px;
+  color: #72db80;
+  font-weight: bold;
+}
+
+.modeGrid {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.retroButton {
+  background-color: #122417;
+  border: 2px solid #284c31;
+  color: #a8ffb2;
+  padding: 11px 16px;
+  font-size: 14px;
+  font-family: 'Courier New', Courier, monospace;
+  font-weight: bold;
+  cursor: pointer;
+  border-radius: 4px;
+  text-align: left;
+  transition: all 0.1s ease;
+
+  &:hover, &.active {
+    background-color: #1f3f28;
+    border-color: #a8ffb2;
+    box-shadow: 0 0 8px rgba(168, 255, 178, 0.4);
+  }
+}
+
+.configBox {
+  flex: 1 1 240px;
+  max-width: 320px;
+  border: 1px dashed #284c31;
+  padding: 12px;
+  border-radius: 4px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  background-color: #0e1d13;
+}
+
+.configOption {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.optionLabel {
+  font-size: 11px;
+  color: #72db80;
+  text-transform: uppercase;
+  font-weight: bold;
+}
+
+.optionGrid {
+  display: flex;
+  gap: 6px;
+}
+
+.sizeButton, .diffButton {
+  flex: 1;
+  background-color: #122417;
+  border: 1px solid #284c31;
+  color: #a8ffb2;
+  font-size: 12px;
+  padding: 7px;
+  font-family: 'Courier New', Courier, monospace;
+  cursor: pointer;
+  border-radius: 2px;
+  text-align: center;
+  font-weight: bold;
+
+  &.selected {
+    background-color: #a8ffb2;
+    color: #0a140d;
+    border-color: #a8ffb2;
+    font-weight: bold;
+  }
+}
+
+.recordsBox {
+  width: 100%;
+  max-width: 660px;
+  background-color: #0e1d13;
+  border: 1px solid #1c3623;
+  padding: 10px 14px;
+  border-radius: 4px;
+  font-size: 11px;
+  display: flex;
+  justify-content: space-around;
+  flex-wrap: wrap;
+  gap: 12px;
+  color: #72db80;
+
+  @media (max-width: 600px) {
+    flex-direction: column;
+    justify-content: center;
+  }
+}
+
+.recordItem {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.trophyIcon { color: #facc15; }
+.timerIcon { color: #38bdf8; }
+.worldTrophyIcon { color: #c084fc; }
+.worldRecordText { color: #d8b4fe; }
+
+.startButtonContainer {
+  display: flex;
+  justify-content: center;
+  margin-top: 10px;
+}
+
+.mainStartBtn {
+  background: none;
+  border: none;
+  color: #a8ffb2;
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 18px;
+  font-weight: bold;
+  cursor: pointer;
+  animation: blink 1.2s infinite step-end;
+  text-decoration: underline;
+
+  &:hover {
+    color: #ffffff;
+    text-shadow: 0 0 10px #ffffff;
+  }
+}
+
+/* PANTALLA JUEGO ACTIVO */
+.gameScreen {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  background-color: #0a140d;
+  color: #a8ffb2;
+  font-family: 'Courier New', Courier, monospace;
+  padding: 12px;
+  box-sizing: border-box;
+}
+
+.hud {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 2px solid #1c3623;
+  padding-bottom: 8px;
+  margin-bottom: 10px;
+}
+
+.hudBackBtn {
+  background: none;
+  border: none;
+  color: #a8ffb2;
+  cursor: pointer;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+
+  &:hover {
+    background-color: #122417;
+  }
+}
+
+.hudCenter {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.hudMode {
+  font-size: 12px;
+  color: #72db80;
+  text-transform: uppercase;
+  font-weight: bold;
+}
+
+.hudTimer {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 16px;
+  font-weight: bold;
+}
+
+.hudStatus {
+  display: flex;
+  align-items: center;
+}
+
+.livesContainer {
+  display: flex;
+  gap: 6px;
+}
+
+.heartIcon {
+  &.heartActive {
+    color: #ef4444;
+    fill: #ef4444;
+    filter: drop-shadow(0 0 4px #ef4444);
+  }
+  &.heartEmpty {
+    color: #27272a;
+  }
+}
+
+// Layout flexible del tablero a pantalla completa
+.boardWrapper {
+  flex-grow: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow: hidden;
+  padding: 5px;
+  width: 100%;
+  height: 100%;
+  box-sizing: border-box;
+}
+
+.nonogramaGridContainer {
+  display: grid;
+  // Aumentamos el tamaño mínimo de la esquina/pistas para que quepan números grandes
+  grid-template-columns: minmax(75px, auto) repeat(var(--grid-size), 1fr);
+  grid-template-rows: minmax(75px, auto) repeat(var(--grid-size), 1fr);
+  width: 100%;
+  height: 100%;
+  // Máximo tamaño cuadrado adaptado
+  max-width: calc(100vh - 220px);
+  max-height: calc(100vh - 220px);
+  aspect-ratio: 1;
+  box-sizing: border-box;
+
+  @media (max-width: 900px) {
+    max-width: calc(100vw - 20px);
+    max-height: calc(100dvh - 280px);
+  }
+}
+
+.cornerCell {
+  grid-column: 1;
+  grid-row: 1;
+  border-right: 2px solid #1c3623;
+  border-bottom: 2px solid #1c3623;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: #1c3623;
+}
+
+.colCluesContainer {
+  grid-row: 1;
+  grid-column: 2 / span var(--grid-size);
+  display: grid;
+  grid-template-columns: repeat(var(--grid-size), 1fr);
+  border-bottom: 2px solid #1c3623;
+}
+
+.colClueColumn {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  align-items: center;
+  font-size: 13px;
+  line-height: 1.2;
+  padding-bottom: 6px;
+  box-sizing: border-box;
+
+  .clueNumber {
+    display: block;
+    font-weight: bold;
+    color: #a8ffb2;
+  }
+}
+
+.rowCluesContainer {
+  grid-column: 1;
+  grid-row: 2 / span var(--grid-size);
+  display: grid;
+  grid-template-rows: repeat(var(--grid-size), 1fr);
+  border-right: 2px solid #1c3623;
+}
+
+.rowClueRow {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  font-size: 13px;
+  padding-right: 10px;
+  gap: 6px;
+  box-sizing: border-box;
+
+  .clueNumber {
+    font-weight: bold;
+    color: #a8ffb2;
+  }
+}
+
+.gridBoard {
+  grid-row: 2 / span var(--grid-size);
+  grid-column: 2 / span var(--grid-size);
+  display: grid;
+  grid-template-columns: repeat(var(--grid-size), 1fr);
+  grid-template-rows: repeat(var(--grid-size), 1fr);
+  background-color: #060a07;
+  border: 1px solid #1c3623;
+}
+
+// Celda individual adaptable al tamaño contenedor
+.gridCell {
+  background-color: #0d160f;
+  border: 0.5px solid #122116;
+  padding: 0;
+  cursor: pointer;
+  position: relative;
+  aspect-ratio: 1;
+  width: 100%;
+  height: 100%;
+  box-sizing: border-box;
+
+  &:hover {
+    background-color: #142419;
+  }
+
+  &.cellCorrect {
+    background-color: #c084fc; // Morado neón clásico
+    border-color: #7c3aed;
+    box-shadow: inset 0 0 6px #f3e8ff, 0 0 6px #c084fc;
+  }
+
+  &.cellError {
+    background-color: #ef4444; // Rojo intenso
+    border-color: #991b1b;
+    box-shadow: inset 0 0 4px #fee2e2;
+    
+    &::after {
+      content: '×';
+      color: #ffffff;
+      font-size: 16px;
+      font-weight: bold;
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+    }
+  }
+}
+
+// Líneas más marcadas para bloques Sudoku de 5x5
+.thickRightBorder {
+  border-right: 2.5px solid #1c3623 !important;
+}
+
+.thickBottomBorder {
+  border-bottom: 2.5px solid #1c3623 !important;
+}
+
+/* Modales y Capas de Fin de Juego */
+.statusOverlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(10, 20, 13, 0.96);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 10;
+  animation: pulse-glow 3s infinite ease-in-out;
+}
+
+.overlayContent {
+  text-align: center;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  max-width: 80%;
+
+  h2 {
+    font-size: 24px;
+    margin: 0;
+    letter-spacing: 3px;
+    font-weight: bold;
+  }
+
+  p {
+    font-size: 12px;
+    color: #72db80;
+    margin: 0;
+  }
+}
+
+.winOverlay {
+  h2 {
+    color: #4ade80;
+    text-shadow: 0 0 12px rgba(74, 222, 128, 0.6);
+  }
+}
+
+.loseOverlay {
+  h2 {
+    color: #f87171;
+    text-shadow: 0 0 12px rgba(248, 113, 113, 0.6);
+  }
+}
+
+.winTrophy {
+  color: #fbbf24;
+  animation: pulse-glow 1.5s infinite ease-in-out;
+}
+
+.skullPlaceholder {
+  font-size: 48px;
+}
+
+.flashResultBox {
+  background-color: #122417;
+  border: 1px dashed #a8ffb2;
+  padding: 10px;
+  border-radius: 4px;
+  margin: 5px 0;
+  font-size: 12px;
+}
+
+.worldRecordBadge {
+  color: #d8b4fe;
+  font-weight: bold;
+  font-size: 11px;
+  margin-top: 6px;
+  animation: blink 1s infinite step-end;
+}
+
+.personalRecordBadge {
+  color: #fde047;
+  font-weight: bold;
+  font-size: 10px;
+  margin-top: 6px;
+}
+
+.mountainEndStats {
+  font-size: 12px !important;
+  color: #f87171 !important;
+}
+
+.overlayButtons {
+  display: flex;
+  gap: 12px;
+  margin-top: 12px;
+}
+
+.actionBtn {
+  background-color: #122417;
+  border: 2px solid #284c31;
+  color: #a8ffb2;
+  padding: 10px 20px;
+  font-size: 12px;
+  font-family: 'Courier New', Courier, monospace;
+  font-weight: bold;
+  cursor: pointer;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.1s ease;
+
+  &:hover {
+    background-color: #a8ffb2;
+    color: #0a140d;
+    border-color: #a8ffb2;
+  }
+}
+
+/* MANDOS RETRO DE GAME BOY EN LOS LATERALES (3 COLUMNAS EN ESCRITORIO) */
+.leftControls {
+  grid-column: 1;
+  grid-row: 1;
+  height: 80%;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-around;
+  align-items: center;
+  box-sizing: border-box;
+  opacity: 0.85;
+
+  @media (max-width: 900px) {
+    grid-column: 1;
+    grid-row: 2;
+    flex-direction: row;
+    justify-content: space-around;
+    align-items: center;
+    width: 100%;
+    height: auto;
+    padding: 10px;
+  }
+}
+
+.rightControls {
+  grid-column: 3;
+  grid-row: 1;
+  height: 80%;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-around;
+  align-items: center;
+  box-sizing: border-box;
+  opacity: 0.85;
+
+  @media (max-width: 900px) {
+    grid-column: 2;
+    grid-row: 2;
+    flex-direction: row;
+    justify-content: space-around;
+    align-items: center;
+    width: 100%;
+    height: auto;
+    padding: 10px;
+  }
+}
+
+.brandContainer {
+  margin-bottom: 10px;
+  border-bottom: 2px solid #4c1d95;
+  width: 100%;
+  text-align: center;
+  padding-bottom: 6px;
+
+  @media (max-width: 900px) {
+    display: none;
+  }
+}
+
+.brandText {
+  font-family: 'Impact', sans-serif;
+  font-size: 14px;
+  letter-spacing: 1px;
+  color: #a78bfa;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.4);
+  font-style: italic;
+}
+
+// Cruceta (D-pad)
+.dpad {
+  position: relative;
+  width: 75px;
+  height: 75px;
+
+  .dpadHorizontal, .dpadVertical {
+    position: absolute;
+    background-color: #18181b;
+    border: 2px solid #09090b;
+    box-shadow: 
+      0 4px 8px rgba(0, 0, 0, 0.5),
+      inset 0 1px 1px rgba(255, 255, 255, 0.05);
+  }
+
+  .dpadHorizontal {
+    top: 25px;
+    left: 0;
+    width: 75px;
+    height: 25px;
+    border-radius: 3px;
+  }
+
+  .dpadVertical {
+    top: 0;
+    left: 25px;
+    width: 25px;
+    height: 75px;
+    border-radius: 3px;
+  }
+
+  .dpadCenter {
+    position: absolute;
+    top: 27px;
+    left: 27px;
+    width: 21px;
+    height: 21px;
+    background-color: #27272a;
+    z-index: 2;
+    border-radius: 50%;
+  }
+}
+
+.volumeController {
+  margin-top: 15px;
+
+  @media (max-width: 900px) {
+    margin-top: 0;
+  }
+}
+
+.volumeBtn {
+  background-color: #18181b;
+  border: 2px solid #09090b;
+  border-radius: 50%;
+  color: #a78bfa;
+  width: 32px;
+  height: 32px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.4);
+
+  &:hover {
+    color: #ffffff;
+    background-color: #27272a;
+  }
+}
+
+// Botones A y B
+.actionButtons {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  transform: rotate(-10deg);
+  justify-self: center;
+
+  @media (max-width: 900px) {
+    flex-direction: row;
+    transform: rotate(-5deg);
+    gap: 10px;
+  }
+}
+
+.actionButtonLabelWrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.gameBoyBtn {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background-color: #991b1b;
+  border: 2.5px solid #6b1111;
+  box-shadow: 
+    0 4px 6px rgba(0, 0, 0, 0.4),
+    inset 0 1px 1px rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.7);
+  font-family: 'Arial Black', sans-serif;
+  font-size: 12px;
+  font-weight: bold;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  &:active {
+    background-color: #7f1d1d;
+    transform: translateY(1.5px);
+  }
+}
+
+.btnLabel {
+  font-size: 7px;
+  font-family: 'Courier New', Courier, monospace;
+  font-weight: bold;
+  color: #a78bfa;
+  text-shadow: 1px 1px 1px rgba(0, 0, 0, 0.3);
+}
+
+// Botones Select y Start
+.systemButtons {
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+  grid-column: 2;
+  grid-row: 1;
+  align-self: flex-end;
+  margin-top: -30px;
+  z-index: 5;
+
+  @media (max-width: 900px) {
+    grid-column: 1 / span 2;
+    grid-row: 3;
+    align-self: center;
+    margin-top: 5px;
+  }
+}
+
+.sysBtnWrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.sysBtn {
+  width: 36px;
+  height: 10px;
+  background-color: #27272a;
+  border: 1.5px solid #09090b;
+  border-radius: 4px;
+  transform: rotate(-20deg);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+  cursor: pointer;
+
+  &:active {
+    background-color: #18181b;
+  }
+}
+
+.sysLabel {
+  font-size: 7px;
+  font-family: 'Courier New', Courier, monospace;
+  font-weight: bold;
+  color: #a78bfa;
+}
+
+// Rejilla altavoz
+.speakerGrille {
+  display: flex;
+  gap: 4px;
+  transform: rotate(-28deg);
+  align-self: flex-end;
+  margin-top: 15px;
+  opacity: 0.6;
+
+  @media (max-width: 900px) {
+    display: none;
+  }
+}
+
+.speakerSlot {
+  width: 4px;
+  height: 20px;
+  background-color: #111827;
+  border-radius: 2px;
+  box-shadow: inset 1px 1px 1px rgba(0, 0, 0, 0.5);
+}
