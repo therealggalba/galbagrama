@@ -1,0 +1,8 @@
+{
+  "name": "galbagrama-arcade",
+  "version": "1.0.0",
+  "description": "Lobby central de juegos de Galbagrama",
+  "scripts": {
+    "build": "npm run build --prefix Nonograma && rm -rf dist && mkdir -p dist && cp index.html dist/ && cp style.css dist/ && cp -r Nonograma/dist dist/Nonograma"
+  }
+}
