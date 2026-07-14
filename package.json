@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "description": "Lobby central de juegos de Galbagrama",
   "scripts": {
+    "prebuild": "npm install --prefix Nonograma --legacy-peer-deps && npm install --prefix Matriculas --legacy-peer-deps",
     "build": "npm run build --prefix Nonograma && npm run build --prefix Matriculas && rm -rf dist && mkdir -p dist && cp index.html dist/ && cp style.css dist/ && cp -r Nonograma/dist dist/Nonograma && cp -r Matriculas/dist dist/Matriculas",
     "deploy": "npm run build && git add -f dist && git commit -m \"Deploy to GitHub Pages\" && git push origin `git subtree split --prefix dist main`:refs/heads/gh-pages --force && git reset --hard HEAD~1"
   }
