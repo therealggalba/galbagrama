@@ -197,18 +197,6 @@
     min-height: 70vh;
     padding: 10px;
   }
-
-  // Scanline overlay para estética CRT
-  &::before {
-    content: " ";
-    display: block;
-    position: absolute;
-    top: 0; left: 0; bottom: 0; right: 0;
-    background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
-    z-index: 10;
-    background-size: 100% 4px, 6px 100%;
-    pointer-events: none;
-  }
 }
 
 .screenHeader {
@@ -282,21 +270,29 @@
   display: flex;
   flex-direction: column;
   position: relative;
-  overflow-y: auto;
-  gap: 15px;
-  padding-right: 2px;
+  overflow: hidden;
+  gap: 12px;
+  padding-right: 0px;
 }
 
 // Estructura de Matrícula
 .matriculaDisplay {
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   align-items: center;
-  gap: 12px;
+  justify-content: space-between;
+  gap: 15px;
   background: #0d0822;
-  padding: 16px;
+  padding: 8px 16px;
   border-radius: 8px;
   border: 2px solid #2e1065;
+  box-sizing: border-box;
+
+  @media (max-width: 950px) {
+    flex-direction: column;
+    gap: 10px;
+    padding: 12px;
+  }
 }
 
 .licensePlateContainer {
@@ -398,12 +394,13 @@
   background-color: #130f2c;
   border: 2px solid #2e1065;
   border-radius: 8px;
-  padding: 20px;
+  padding: 12px 16px;
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 12px;
   position: relative;
   transition: all 0.3s ease;
+  flex: 1;
 
   &:hover {
     border-color: #4c1d95;

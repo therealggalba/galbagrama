@@ -12,6 +12,22 @@ import styles from './MatriculasGame.module.scss';
 // Convertir el JSON de palabras a un Set para búsquedas O(1) rápidas
 const SPANISH_WORDS_SET = new Set(wordList);
 
+// Función para validar si una combinación de 3 letras tiene solución en el diccionario
+const hasValidWord = (letters: string): boolean => {
+  const target = letters.toUpperCase();
+  return wordList.some(word => {
+    const cleanWord = word.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase();
+    let searchStartIndex = 0;
+    for (let i = 0; i < 3; i++) {
+      const char = target[i];
+      const foundIndex = cleanWord.indexOf(char, searchStartIndex);
+      if (foundIndex === -1) return false;
+      searchStartIndex = foundIndex + 1;
+    }
+    return true;
+  });
+};
+
 // Mapa de Traducciones Locales (Castellano)
 const ES_TRANSLATIONS: Record<string, string> = {
   "common.victory": "¡Victoria!",
@@ -245,7 +261,7 @@ const MatriculasGame: React.FC = () => {
 
   // Iniciar nueva ronda de matrícula
   const startNewGame = () => {
-    const newGame = generateMatricula();
+    const newGame = generateMatricula(hasValidWord);
     setGame(newGame);
     setFormulaInput('');
     setWordInput('');
@@ -438,6 +454,11 @@ const MatriculasGame: React.FC = () => {
             
             {/* Cabecera del juego: Placa de Matrícula y Estado */}
             <div className={styles.matriculaDisplay}>
+              <div className={styles.scoreBox}>
+                <Trophy size={12} className={styles.trophyIcon} />
+                <span>RECORD: {personalRecord}</span>
+              </div>
+              
               {game && (
                 <div className={styles.licensePlateContainer}>
                   <div className={styles.euBand}>
@@ -449,15 +470,9 @@ const MatriculasGame: React.FC = () => {
                 </div>
               )}
               
-              <div className={styles.scoreRow}>
-                <div className={styles.scoreBox}>
-                  <Trophy size={12} className={styles.trophyIcon} />
-                  <span>RECORD: {personalRecord}</span>
-                </div>
-                <div className={styles.scoreBox}>
-                  <Star size={12} className={styles.starIcon} />
-                  <span>SOLVED: {score}</span>
-                </div>
+              <div className={styles.scoreBox}>
+                <Star size={12} className={styles.starIcon} />
+                <span>SOLVED: {score}</span>
               </div>
             </div>
 
