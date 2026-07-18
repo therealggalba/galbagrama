@@ -389,8 +389,20 @@ const NonogramaGame: React.FC = () => {
     return `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}.${centiseconds.toString().padStart(2, '0')}`;
   };
 
+  const isSPA = !!(window as any).__GALBAHUB_SPA__;
+  const galbaHubUrl = isSPA ? '/' : '../';
+
   return (
     <div className={styles.container}>
+      <div className={styles.backHubWrapper}>
+        <a 
+          href={galbaHubUrl} 
+          className={styles.backHubBtn}
+        >
+          <ArrowLeft size={14} />
+          <span>Home</span>
+        </a>
+      </div>
       <div className={styles.gameBoyFrame}>
         {/* Parte superior del marco (Pantalla) */}
         <div className={styles.screenBezel}>

@@ -254,3 +254,36 @@ body {
     font-size: 2rem;
   }
 }
+
+.back-hub-wrapper {
+  align-self: flex-start;
+  margin-bottom: 1.5rem;
+  z-index: 100;
+}
+
+.back-hub-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: rgba(0, 0, 0, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  padding: 0.6rem 1rem;
+  border-radius: 9999px;
+  color: #fff;
+  font-family: 'Outfit', sans-serif;
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  text-decoration: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  backdrop-filter: blur(8px);
+}
+
+.back-hub-btn:hover {
+  background: #fff;
+  color: #000;
+  border-color: #fff;
+}
+

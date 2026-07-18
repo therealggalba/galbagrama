@@ -277,8 +277,20 @@ const MatriculasGame: React.FC = () => {
     );
   };
 
+  const isSPA = !!(window as any).__GALBAHUB_SPA__;
+  const galbaHubUrl = isSPA ? '/' : '../';
+
   return (
     <div className={styles.container}>
+      <div className={styles.backHubWrapper}>
+        <a 
+          href={galbaHubUrl} 
+          className={styles.backHubBtn}
+        >
+          <ArrowLeft size={14} />
+          <span>Home</span>
+        </a>
+      </div>
       <div className={`${styles.gameBoyFrame} ${screenGlitch ? styles.glitchEffect : ''}`}>
         
         {/* Panel Izquierdo: Botones retro decorativos (Cruceta D-Pad) */}
