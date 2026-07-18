@@ -83,6 +83,13 @@ const NonogramaGame: React.FC = () => {
   const [game, setGame] = useState<NonogramaGameType | null>(null);
   const [gridState, setGridState] = useState<CellState[][]>([]);
   const [focusedCell, setFocusedCell] = useState<{ r: number; c: number } | null>(null);
+  const [keyboardActive, setKeyboardActive] = useState<boolean>(false);
+  const [dpadPressState, setDpadPressState] = useState<{
+    up: boolean;
+    down: boolean;
+    left: boolean;
+    right: boolean;
+  }>({ up: false, down: false, left: false, right: false });
   const [lives, setLives] = useState<number>(3);
   const [isGameOver, setIsGameOver] = useState<boolean>(false);
   const [isGameWon, setIsGameWon] = useState<boolean>(false);
@@ -109,7 +116,7 @@ const NonogramaGame: React.FC = () => {
       const audioCtx = new (window.AudioContext || (window as any).webkitAudioContext)();
       
       // Activar destello de pantalla (glitch) al pulsar botones de la Game Boy
-      if (['coin', 'jump', 'powerup', 'pipe', 'click'].includes(type)) {
+      if (['coin', 'powerup', 'pipe'].includes(type)) {
         setScreenGlitch(true);
         setTimeout(() => setScreenGlitch(false), 150);
       }
@@ -266,30 +273,38 @@ const NonogramaGame: React.FC = () => {
         case 'ArrowUp':
         case 'w':
         case 'W':
+          setKeyboardActive(true);
           nextR = Math.max(0, r - 1);
           e.preventDefault();
           break;
         case 'ArrowDown':
         case 's':
         case 'S':
+          setKeyboardActive(true);
           nextR = Math.min(size - 1, r + 1);
           e.preventDefault();
           break;
         case 'ArrowLeft':
         case 'a':
         case 'A':
+          setKeyboardActive(true);
           nextC = Math.max(0, c - 1);
           e.preventDefault();
           break;
         case 'ArrowRight':
         case 'd':
         case 'D':
+          setKeyboardActive(true);
           nextC = Math.min(size - 1, c + 1);
           e.preventDefault();
           break;
         case 'Enter':
         case ' ':
-          handleCellClick(r, c);
+          if (keyboardActive) {
+            handleCellClick(r, c);
+          } else {
+            setKeyboardActive(true);
+          }
           e.preventDefault();
           break;
         default:
@@ -299,6 +314,8 @@ const NonogramaGame: React.FC = () => {
       if (nextR !== r || nextC !== c) {
         playRetroSound('click');
         setFocusedCell({ r: nextR, c: nextC });
+      } else if (['ArrowUp', 'w', 'W', 'ArrowDown', 's', 'S', 'ArrowLeft', 'a', 'A', 'ArrowRight', 'd', 'D'].includes(e.key)) {
+        playRetroSound('click');
       }
     };
 
@@ -306,7 +323,71 @@ const NonogramaGame: React.FC = () => {
     return () => {
       window.removeEventListener('keydown', handleKeyDown);
     };
-  }, [activeMode, game, isGameOver, isGameWon, focusedCell]);
+  }, [activeMode, game, isGameOver, isGameWon, focusedCell, keyboardActive]);
+
+  // Escuchar teclado para iluminar la cruceta (D-pad) exterior
+  useEffect(() => {
+    const handleGlobalKeyDown = (e: KeyboardEvent) => {
+      switch (e.key) {
+        case 'ArrowUp':
+        case 'w':
+        case 'W':
+          setDpadPressState(prev => ({ ...prev, up: true }));
+          break;
+        case 'ArrowDown':
+        case 's':
+        case 'S':
+          setDpadPressState(prev => ({ ...prev, down: true }));
+          break;
+        case 'ArrowLeft':
+        case 'a':
+        case 'A':
+          setDpadPressState(prev => ({ ...prev, left: true }));
+          break;
+        case 'ArrowRight':
+        case 'd':
+        case 'D':
+          setDpadPressState(prev => ({ ...prev, right: true }));
+          break;
+        default:
+          break;
+      }
+    };
+
+    const handleGlobalKeyUp = (e: KeyboardEvent) => {
+      switch (e.key) {
+        case 'ArrowUp':
+        case 'w':
+        case 'W':
+          setDpadPressState(prev => ({ ...prev, up: false }));
+          break;
+        case 'ArrowDown':
+        case 's':
+        case 'S':
+          setDpadPressState(prev => ({ ...prev, down: false }));
+          break;
+        case 'ArrowLeft':
+        case 'a':
+        case 'A':
+          setDpadPressState(prev => ({ ...prev, left: false }));
+          break;
+        case 'ArrowRight':
+        case 'd':
+        case 'D':
+          setDpadPressState(prev => ({ ...prev, right: false }));
+          break;
+        default:
+          break;
+      }
+    };
+
+    window.addEventListener('keydown', handleGlobalKeyDown);
+    window.addEventListener('keyup', handleGlobalKeyUp);
+    return () => {
+      window.removeEventListener('keydown', handleGlobalKeyDown);
+      window.removeEventListener('keyup', handleGlobalKeyUp);
+    };
+  }, []);
 
   // Iniciar una partida
   const startGameInstance = (mode: GameMode, roundIndex: number = 0) => {
@@ -346,6 +427,7 @@ const NonogramaGame: React.FC = () => {
     );
     setGridState(initialGrid);
     setFocusedCell({ r: 0, c: 0 });
+    setKeyboardActive(false);
     setActiveMode(mode);
 
     if (mode === 'flash') {
@@ -362,6 +444,7 @@ const NonogramaGame: React.FC = () => {
     if (!gridState || !gridState[r] || gridState[r][c] !== 'hidden') return;
 
     setFocusedCell({ r, c });
+    setKeyboardActive(false);
 
     const isCorrect = game.grid[r][c];
     const newGridState = gridState.map((row, ri) =>
@@ -726,7 +809,7 @@ const NonogramaGame: React.FC = () => {
                             const isThickRight = (cIdx + 1) % 5 === 0 && cIdx !== game.grid.length - 1;
                             const isThickBottom = (rIdx + 1) % 5 === 0 && rIdx !== game.grid.length - 1;
                             
-                            const isFocused = focusedCell && focusedCell.r === rIdx && focusedCell.c === cIdx;
+                            const isFocused = keyboardActive && focusedCell && focusedCell.r === rIdx && focusedCell.c === cIdx;
                             
                             return (
                               <button
@@ -832,8 +915,10 @@ const NonogramaGame: React.FC = () => {
 
           {/* D-Pad (Cruceta) */}
           <div className={styles.dpad}>
-            <div className={styles.dpadHorizontal} />
-            <div className={styles.dpadVertical} />
+            <div className={`${styles.dpadDirection} ${styles.dpadUp} ${dpadPressState.up ? styles.pressed : ''}`} />
+            <div className={`${styles.dpadDirection} ${styles.dpadDown} ${dpadPressState.down ? styles.pressed : ''}`} />
+            <div className={`${styles.dpadDirection} ${styles.dpadLeft} ${dpadPressState.left ? styles.pressed : ''}`} />
+            <div className={`${styles.dpadDirection} ${styles.dpadRight} ${dpadPressState.right ? styles.pressed : ''}`} />
             <div className={styles.dpadCenter} />
           </div>
 
