@@ -328,26 +328,27 @@ const NonogramaGame: React.FC = () => {
   // Escuchar teclado para iluminar la cruceta (D-pad) exterior
   useEffect(() => {
     const handleGlobalKeyDown = (e: KeyboardEvent) => {
+      if (e.repeat) return;
       switch (e.key) {
         case 'ArrowUp':
         case 'w':
         case 'W':
-          setDpadPressState(prev => ({ ...prev, up: true }));
+          setDpadPressState(prev => prev.up ? prev : { ...prev, up: true });
           break;
         case 'ArrowDown':
         case 's':
         case 'S':
-          setDpadPressState(prev => ({ ...prev, down: true }));
+          setDpadPressState(prev => prev.down ? prev : { ...prev, down: true });
           break;
         case 'ArrowLeft':
         case 'a':
         case 'A':
-          setDpadPressState(prev => ({ ...prev, left: true }));
+          setDpadPressState(prev => prev.left ? prev : { ...prev, left: true });
           break;
         case 'ArrowRight':
         case 'd':
         case 'D':
-          setDpadPressState(prev => ({ ...prev, right: true }));
+          setDpadPressState(prev => prev.right ? prev : { ...prev, right: true });
           break;
         default:
           break;
@@ -359,22 +360,22 @@ const NonogramaGame: React.FC = () => {
         case 'ArrowUp':
         case 'w':
         case 'W':
-          setDpadPressState(prev => ({ ...prev, up: false }));
+          setDpadPressState(prev => !prev.up ? prev : { ...prev, up: false });
           break;
         case 'ArrowDown':
         case 's':
         case 'S':
-          setDpadPressState(prev => ({ ...prev, down: false }));
+          setDpadPressState(prev => !prev.down ? prev : { ...prev, down: false });
           break;
         case 'ArrowLeft':
         case 'a':
         case 'A':
-          setDpadPressState(prev => ({ ...prev, left: false }));
+          setDpadPressState(prev => !prev.left ? prev : { ...prev, left: false });
           break;
         case 'ArrowRight':
         case 'd':
         case 'D':
-          setDpadPressState(prev => ({ ...prev, right: false }));
+          setDpadPressState(prev => !prev.right ? prev : { ...prev, right: false });
           break;
         default:
           break;
