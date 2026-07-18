@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { useTranslation } from 'react-i18next';
 import {
   generateMatricula,
   validateMathExpression,
@@ -13,9 +12,49 @@ import styles from './MatriculasGame.module.scss';
 // Convertir el JSON de palabras a un Set para búsquedas O(1) rápidas
 const SPANISH_WORDS_SET = new Set(wordList);
 
-const MatriculasGame: React.FC = () => {
-  const { t } = useTranslation();
+// Mapa de Traducciones Locales (Castellano)
+const ES_TRANSLATIONS: Record<string, string> = {
+  "common.victory": "¡Victoria!",
+  "common.defeat": "¡Derrota!",
+  "common.restart": "Reiniciar",
+  "common.difficulty": "Dificultad",
+  "common.back": "Volver",
+  "matriculas.title": "🚗 RETRO MATRÍCULAS",
+  "matriculas.subtitle": "JUEGO DE LA MATRÍCULA",
+  "matriculas.licensePlate": "Matrícula",
+  "matriculas.juego1Title": "Juego 1: Sumar 10",
+  "matriculas.juego1Desc": "Usa los 4 dígitos exactamente una vez para hacer exactamente 10.",
+  "matriculas.juego2Title": "Juego 2: Palabras en Orden",
+  "matriculas.juego2Desc": "Escribe una palabra en español que contenga las 3 letras en el mismo orden.",
+  "matriculas.inputFormula": "Ingresa tu fórmula...",
+  "matriculas.inputWord": "Ingresa tu palabra...",
+  "matriculas.evaluate": "Evaluar",
+  "matriculas.hint": "Pedir Pista",
+  "matriculas.nextPlate": "Siguiente Matrícula",
+  "matriculas.formulaResult": "Resultado: {{val}}",
+  "matriculas.wordValid": "¡Palabra en orden!",
+  "matriculas.wordInvalid": "Letras no coinciden o no están en orden.",
+  "matriculas.wordNotFound": "Palabra no encontrada en el diccionario. ¿Aceptar palabra manual?",
+  "matriculas.acceptWord": "Aceptar Palabra",
+  "matriculas.personalRecord": "Récord Personal: {{score}} matrículas",
+  "matriculas.currentScore": "Matrículas Resueltas: {{score}}",
+  "matriculas.errorDigits": "Debes usar cada dígito exactamente una vez.",
+  "matriculas.errorMath": "Expresión inválida o división por cero.",
+  "matriculas.errorResult": "El resultado no es 10."
+};
 
+// Helper de Traducción Local
+const t = (key: string, params?: Record<string, any>) => {
+  let text = ES_TRANSLATIONS[key] || key;
+  if (params) {
+    Object.entries(params).forEach(([k, v]) => {
+      text = text.replace(`{{${k}}}`, String(v));
+    });
+  }
+  return text;
+};
+
+const MatriculasGame: React.FC = () => {
   // Estados del juego
   const [game, setGame] = useState<MatriculaGame | null>(null);
   const [formulaInput, setFormulaInput] = useState<string>('');
@@ -38,6 +77,14 @@ const MatriculasGame: React.FC = () => {
   const [screenGlitch, setScreenGlitch] = useState<boolean>(false);
   const [isGameWon, setIsGameWon] = useState<boolean>(false);
   const [showHint, setShowHint] = useState<boolean>(false);
+  
+  // Estado para la cruceta D-pad (D-pad press state)
+  const [dpadPressState, setDpadPressState] = useState<{
+    up: boolean;
+    down: boolean;
+    left: boolean;
+    right: boolean;
+  }>({ up: false, down: false, left: false, right: false });
 
   // Audio sintetizado (efectos retro de Game Boy)
   const playRetroSound = (type: 'click' | 'correct' | 'error' | 'win' | 'powerup' | 'pipe') => {
@@ -46,7 +93,7 @@ const MatriculasGame: React.FC = () => {
       const audioCtx = new (window.AudioContext || (window as any).webkitAudioContext)();
       
       // Destello de pantalla (glitch)
-      if (['win', 'correct', 'error'].includes(type)) {
+      if (['win', 'powerup', 'pipe'].includes(type)) {
         setScreenGlitch(true);
         setTimeout(() => setScreenGlitch(false), 150);
       }
@@ -129,6 +176,71 @@ const MatriculasGame: React.FC = () => {
       setPersonalRecord(parseInt(savedRecord, 10));
     }
     startNewGame();
+  }, []);
+
+  // Escuchar teclado para iluminar la cruceta (D-pad) exterior
+  useEffect(() => {
+    const handleGlobalKeyDown = (e: KeyboardEvent) => {
+      if (e.repeat) return;
+      switch (e.key) {
+        case 'ArrowUp':
+        case 'w':
+        case 'W':
+          setDpadPressState(prev => prev.up ? prev : { ...prev, up: true });
+          break;
+        case 'ArrowDown':
+        case 's':
+        case 'S':
+          setDpadPressState(prev => prev.down ? prev : { ...prev, down: true });
+          break;
+        case 'ArrowLeft':
+        case 'a':
+        case 'A':
+          setDpadPressState(prev => prev.left ? prev : { ...prev, left: true });
+          break;
+        case 'ArrowRight':
+        case 'd':
+        case 'D':
+          setDpadPressState(prev => prev.right ? prev : { ...prev, right: true });
+          break;
+        default:
+          break;
+      }
+    };
+
+    const handleGlobalKeyUp = (e: KeyboardEvent) => {
+      switch (e.key) {
+        case 'ArrowUp':
+        case 'w':
+        case 'W':
+          setDpadPressState(prev => !prev.up ? prev : { ...prev, up: false });
+          break;
+        case 'ArrowDown':
+        case 's':
+        case 'S':
+          setDpadPressState(prev => !prev.down ? prev : { ...prev, down: false });
+          break;
+        case 'ArrowLeft':
+        case 'a':
+        case 'A':
+          setDpadPressState(prev => !prev.left ? prev : { ...prev, left: false });
+          break;
+        case 'ArrowRight':
+        case 'd':
+        case 'D':
+          setDpadPressState(prev => !prev.right ? prev : { ...prev, right: false });
+          break;
+        default:
+          break;
+      }
+    };
+
+    window.addEventListener('keydown', handleGlobalKeyDown);
+    window.addEventListener('keyup', handleGlobalKeyUp);
+    return () => {
+      window.removeEventListener('keydown', handleGlobalKeyDown);
+      window.removeEventListener('keyup', handleGlobalKeyUp);
+    };
   }, []);
 
   // Iniciar nueva ronda de matrícula
@@ -296,11 +408,11 @@ const MatriculasGame: React.FC = () => {
         {/* Panel Izquierdo: Botones retro decorativos (Cruceta D-Pad) */}
         <div className={styles.leftControls}>
           <div className={styles.dpad}>
-            <div className={styles.dpadUp} onClick={() => playRetroSound('click')}></div>
-            <div className={styles.dpadLeft} onClick={() => playRetroSound('click')}></div>
+            <div className={`${styles.dpadDirection} ${styles.dpadUp} ${dpadPressState.up ? styles.pressed : ''}`} />
+            <div className={`${styles.dpadDirection} ${styles.dpadLeft} ${dpadPressState.left ? styles.pressed : ''}`} />
             <div className={styles.dpadCenter}></div>
-            <div className={styles.dpadRight} onClick={() => playRetroSound('click')}></div>
-            <div className={styles.dpadDown} onClick={() => playRetroSound('click')}></div>
+            <div className={`${styles.dpadDirection} ${styles.dpadRight} ${dpadPressState.right ? styles.pressed : ''}`} />
+            <div className={`${styles.dpadDirection} ${styles.dpadDown} ${dpadPressState.down ? styles.pressed : ''}`} />
           </div>
           <span className={styles.retroBrand}>GALBA</span>
         </div>

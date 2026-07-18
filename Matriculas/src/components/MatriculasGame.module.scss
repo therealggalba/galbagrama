@@ -105,60 +105,73 @@
   height: 100px;
   background-color: transparent;
 
-  div {
+  .dpadDirection {
     position: absolute;
     background-color: #0f0b21;
     border: 2px solid #2e1065;
     cursor: pointer;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.4);
+    box-shadow: 
+      0 4px 6px rgba(0, 0, 0, 0.4),
+      inset 0 1px 1px rgba(255, 255, 255, 0.05);
+    transition: background-color 0.08s ease, box-shadow 0.08s ease;
 
-    &:active {
-      background-color: #2e1065;
+    &.pressed {
+      background-color: #e879f9; /* Rosa/púrpura brillante */
+      box-shadow: 
+        0 0 12px #e879f9,
+        inset 0 0 5px #e879f9;
+      border-color: #c084fc;
     }
   }
-}
 
-.dpadCenter {
-  top: 35px;
-  left: 35px;
-  width: 30px;
-  height: 30px;
-  background-color: #0f0b21 !important;
-  border: none !important;
-  z-index: 2;
-  box-shadow: none !important;
-}
+  .dpadUp {
+    top: 5px;
+    left: 35px;
+    width: 30px;
+    height: 32px;
+    border-radius: 4px 4px 0 0;
+    border-bottom: none;
+  }
 
-.dpadUp {
-  top: 5px;
-  left: 35px;
-  width: 30px;
-  height: 32px;
-  border-radius: 4px 4px 0 0;
-}
+  .dpadDown {
+    bottom: 5px;
+    left: 35px;
+    width: 30px;
+    height: 32px;
+    border-radius: 0 0 4px 4px;
+    border-top: none;
+  }
 
-.dpadDown {
-  bottom: 5px;
-  left: 35px;
-  width: 30px;
-  height: 32px;
-  border-radius: 0 0 4px 4px;
-}
+  .dpadLeft {
+    top: 35px;
+    left: 5px;
+    width: 32px;
+    height: 30px;
+    border-radius: 4px 0 0 4px;
+    border-right: none;
+  }
 
-.dpadLeft {
-  top: 35px;
-  left: 5px;
-  width: 32px;
-  height: 30px;
-  border-radius: 4px 0 0 4px;
-}
+  .dpadRight {
+    top: 35px;
+    right: 5px;
+    width: 32px;
+    height: 30px;
+    border-radius: 0 4px 4px 0;
+    border-left: none;
+  }
 
-.dpadRight {
-  top: 35px;
-  right: 5px;
-  width: 32px;
-  height: 30px;
-  border-radius: 0 4px 4px 0;
+  .dpadCenter {
+    position: absolute;
+    top: 35px;
+    left: 35px;
+    width: 30px;
+    height: 30px;
+    background-color: #0f0b21 !important;
+    border: none !important;
+    z-index: 2;
+    box-shadow: none !important;
+    border-radius: 0;
+  }
 }
 
 // Bisel de la Pantalla (Centro)
