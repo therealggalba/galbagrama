@@ -546,11 +546,19 @@ const MatriculasGame: React.FC = () => {
 
                 {/* Estado de validación matemática */}
                 <div className={styles.validationFeedback}>
-                  {mathError && <span className={styles.errorText}>{mathError}</span>}
-                  {mathValue !== null && !mathError && (
-                    <span className={mathValue === 10 ? styles.successText : styles.infoText}>
-                      {t('matriculas.formulaResult', { val: mathValue })}
-                    </span>
+                  {showHint && game ? (
+                    <div className={styles.hintText}>
+                      Pista: <strong>{game.solution}</strong>
+                    </div>
+                  ) : (
+                    <>
+                      {mathError && <span className={styles.errorText}>{mathError}</span>}
+                      {mathValue !== null && !mathError && (
+                        <span className={mathValue === 10 ? styles.successText : styles.infoText}>
+                          {t('matriculas.formulaResult', { val: mathValue })}
+                        </span>
+                      )}
+                    </>
                   )}
                 </div>
               </div>
@@ -618,15 +626,6 @@ const MatriculasGame: React.FC = () => {
                 <button className={styles.nextBtn} onClick={startNewGame}>
                   {t('matriculas.nextPlate')}
                 </button>
-              </div>
-            )}
-
-            {showHint && game && (
-              <div className={styles.hintBanner}>
-                <div className={styles.hintText}>
-                  Fórmula matemática ejemplo:<br/>
-                  <strong>{game.solution}</strong>
-                </div>
               </div>
             )}
           </div>
