@@ -1,5 +1,4 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { useTranslation } from 'react-i18next';
 import {
   generateNonograma,
   NonogramaGame as NonogramaGameType,
@@ -27,18 +26,63 @@ const MOUNTAIN_LEVELS = [
 type GameMode = 'menu' | 'normal' | 'mountain' | 'flash';
 type CellState = 'hidden' | 'correct' | 'error';
 
+// Diccionario de Traducciones en Español
+const ES_TRANSLATIONS: Record<string, string> = {
+  "common.victory": "¡Victoria!",
+  "common.defeat": "¡Derrota!",
+  "common.restart": "Reiniciar",
+  "common.lives": "Vidas",
+  "common.difficulty": "Dificultad",
+  "common.size": "Tamaño",
+  "common.easy": "Fácil",
+  "common.medium": "Medio",
+  "common.hard": "Difícil",
+  "common.back": "Volver",
+  "nonograma.title": "🎮 RETRO NONOGRAMA",
+  "nonograma.mode": "Modo de Juego",
+  "nonograma.modeNormal": "Normal",
+  "nonograma.modeMountain": "Montaña",
+  "nonograma.modeFlash": "Flash",
+  "nonograma.livesCount": "Vidas",
+  "nonograma.scoreRecord": "Récord: {{score}}",
+  "nonograma.round": "Ronda {{round}}",
+  "nonograma.consecutiveRecord": "Récord Montaña: Ronda {{round}}",
+  "nonograma.flashRecord": "Récord Flash: {{time}}s",
+  "nonograma.worldRecord": "Récord Mundial: {{time}} (por {{name}})",
+  "nonograma.beatWorldRecord": "👑 ¡NUEVO RÉCORD MUNDIAL! 👑",
+  "nonograma.currentTime": "Tiempo: {{time}}s",
+  "nonograma.victoryMsg": "¡Felicidades! Has completado el nonograma.",
+  "nonograma.defeatMsg": "¡Se acabaron las vidas! Inténtalo de nuevo.",
+  "nonograma.startNewGame": "Nueva Partida",
+  "nonograma.nextRound": "Siguiente Ronda",
+  "nonograma.normalDesc": "Elige tamaño y dificultad. Descubre el patrón oculto.",
+  "nonograma.mountainDesc": "Supera niveles en orden ascendente: de 5 Fácil a 20 Difícil. 3 vidas por ronda.",
+  "nonograma.flashDesc": "Configuración 10x10 Difícil. Cronómetro activo. ¡Supera el récord mundial de 1:45!"
+};
+
+// Helper de Traducción Local
+const t = (key: string, params?: Record<string, any>) => {
+  let text = ES_TRANSLATIONS[key] || key;
+  if (params) {
+    Object.entries(params).forEach(([k, v]) => {
+      text = text.replace(`{{${k}}}`, String(v));
+    });
+  }
+  return text;
+};
+
 const NonogramaGame: React.FC = () => {
-  const { t } = useTranslation();
 
   // Estados de configuración de juego
   const [activeMode, setActiveMode] = useState<GameMode>('menu');
-  const [selectedSize, setSelectedSize] = useState<number>(5);
-  const [selectedDifficulty, setSelectedDifficulty] = useState<NonogramaDifficulty>('easy');
+  const [selectedSize, setSelectedSize] = useState<number | null>(null);
+  const [selectedDifficulty, setSelectedDifficulty] = useState<NonogramaDifficulty | null>(null);
   const [mountainRound, setMountainRound] = useState<number>(0); // Índice de 0 a 11
 
   // Estados de partida
   const [game, setGame] = useState<NonogramaGameType | null>(null);
   const [gridState, setGridState] = useState<CellState[][]>([]);
+  const [focusedCell, setFocusedCell] = useState<{ r: number; c: number } | null>(null);
   const [lives, setLives] = useState<number>(3);
   const [isGameOver, setIsGameOver] = useState<boolean>(false);
   const [isGameWon, setIsGameWon] = useState<boolean>(false);
@@ -207,19 +251,76 @@ const NonogramaGame: React.FC = () => {
     };
   }, [timerRunning]);
 
+  // Navegación por teclado dentro de la cuadrícula
+  useEffect(() => {
+    if (activeMode === 'menu' || !game || isGameOver || isGameWon || !focusedCell) return;
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      const size = game.grid.length;
+      const { r, c } = focusedCell;
+
+      let nextR = r;
+      let nextC = c;
+
+      switch (e.key) {
+        case 'ArrowUp':
+        case 'w':
+        case 'W':
+          nextR = Math.max(0, r - 1);
+          e.preventDefault();
+          break;
+        case 'ArrowDown':
+        case 's':
+        case 'S':
+          nextR = Math.min(size - 1, r + 1);
+          e.preventDefault();
+          break;
+        case 'ArrowLeft':
+        case 'a':
+        case 'A':
+          nextC = Math.max(0, c - 1);
+          e.preventDefault();
+          break;
+        case 'ArrowRight':
+        case 'd':
+        case 'D':
+          nextC = Math.min(size - 1, c + 1);
+          e.preventDefault();
+          break;
+        case 'Enter':
+        case ' ':
+          handleCellClick(r, c);
+          e.preventDefault();
+          break;
+        default:
+          return;
+      }
+
+      if (nextR !== r || nextC !== c) {
+        playRetroSound('click');
+        setFocusedCell({ r: nextR, c: nextC });
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [activeMode, game, isGameOver, isGameWon, focusedCell]);
+
   // Iniciar una partida
   const startGameInstance = (mode: GameMode, roundIndex: number = 0) => {
-    playRetroSound('click');
-    setLives(3);
-    setIsGameOver(false);
-    setIsGameWon(false);
-    setNewRecordAlert(false);
-    setNewWorldRecordAlert(false);
+    let size: number = 5;
+    let diff: NonogramaDifficulty = 'easy';
 
-    let size = selectedSize;
-    let diff = selectedDifficulty;
-
-    if (mode === 'mountain') {
+    if (mode === 'normal') {
+      if (selectedSize === null || selectedDifficulty === null) {
+        playRetroSound('error');
+        return;
+      }
+      size = selectedSize;
+      diff = selectedDifficulty;
+    } else if (mode === 'mountain') {
       size = MOUNTAIN_LEVELS[roundIndex].size;
       diff = MOUNTAIN_LEVELS[roundIndex].difficulty;
       setMountainRound(roundIndex);
@@ -229,6 +330,13 @@ const NonogramaGame: React.FC = () => {
       setTimeMs(0);
     }
 
+    playRetroSound('click');
+    setLives(3);
+    setIsGameOver(false);
+    setIsGameWon(false);
+    setNewRecordAlert(false);
+    setNewWorldRecordAlert(false);
+
     const generated = generateNonograma(size, diff);
     setGame(generated);
 
@@ -237,6 +345,7 @@ const NonogramaGame: React.FC = () => {
       Array.from({ length: size }, () => 'hidden')
     );
     setGridState(initialGrid);
+    setFocusedCell({ r: 0, c: 0 });
     setActiveMode(mode);
 
     if (mode === 'flash') {
@@ -251,6 +360,8 @@ const NonogramaGame: React.FC = () => {
     // Comprobación defensiva de límites del tablero
     if (r >= game.grid.length || c >= (game.grid[0]?.length || 0)) return;
     if (!gridState || !gridState[r] || gridState[r][c] !== 'hidden') return;
+
+    setFocusedCell({ r, c });
 
     const isCorrect = game.grid[r][c];
     const newGridState = gridState.map((row, ri) =>
@@ -344,6 +455,7 @@ const NonogramaGame: React.FC = () => {
     setTimerRunning(false);
     setActiveMode('menu');
     setGame(null);
+    setFocusedCell(null);
   };
 
   // Resetear la partida actual
@@ -432,7 +544,7 @@ const NonogramaGame: React.FC = () => {
                     <h3 className={styles.sectionLabel}>{t('nonograma.mode')}</h3>
                     <div className={styles.modeGrid}>
                       <button
-                        className={`${styles.retroButton} ${selectedDifficulty === 'easy' && activeMode === 'menu' ? styles.active : ''}`}
+                        className={styles.retroButton}
                         onClick={() => startGameInstance('normal')}
                       >
                         {t('nonograma.modeNormal')}
@@ -614,6 +726,8 @@ const NonogramaGame: React.FC = () => {
                             const isThickRight = (cIdx + 1) % 5 === 0 && cIdx !== game.grid.length - 1;
                             const isThickBottom = (rIdx + 1) % 5 === 0 && rIdx !== game.grid.length - 1;
                             
+                            const isFocused = focusedCell && focusedCell.r === rIdx && focusedCell.c === cIdx;
+                            
                             return (
                               <button
                                 key={`${rIdx}-${cIdx}`}
@@ -623,6 +737,7 @@ const NonogramaGame: React.FC = () => {
                                   ${cellState === 'error' ? styles.cellError : ''}
                                   ${isThickRight ? styles.thickRightBorder : ''}
                                   ${isThickBottom ? styles.thickBottomBorder : ''}
+                                  ${isFocused ? styles.cellFocused : ''}
                                 `}
                                 onClick={() => handleCellClick(rIdx, cIdx)}
                                 disabled={isGameOver || isGameWon}

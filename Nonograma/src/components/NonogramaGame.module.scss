@@ -541,6 +541,14 @@
     background-color: #142419;
   }
 
+  &.cellFocused {
+    outline: 2.5px solid #22d3ee; // Azul cian neón brillante
+    outline-offset: -2.5px;
+    z-index: 10;
+    box-shadow: 0 0 8px #22d3ee, inset 0 0 4px #22d3ee;
+    animation: pulseFocused 0.8s infinite alternate;
+  }
+
   &.cellCorrect {
     background-color: #c084fc; // Morado neón clásico
     border-color: #7c3aed;
@@ -562,6 +570,17 @@
       left: 50%;
       transform: translate(-50%, -50%);
     }
+  }
+}
+
+@keyframes pulseFocused {
+  0% {
+    outline-color: #22d3ee;
+    box-shadow: 0 0 3px #22d3ee, inset 0 0 1px #22d3ee;
+  }
+  100% {
+    outline-color: #38bdf8;
+    box-shadow: 0 0 8px #38bdf8, inset 0 0 5px #38bdf8;
   }
 }
 
