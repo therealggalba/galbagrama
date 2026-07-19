@@ -1,0 +1,399 @@
+/* Estilos para Galbagrama Arcade Lobby */
+
+:root {
+  --color-bg: #090610;
+  --color-panel: #130f22;
+  --color-neon-purple: #c084fc;
+  --color-neon-pink: #f472b6;
+  --color-neon-cyan: #22d3ee;
+  --color-text: #e2e8f0;
+  --color-text-muted: #94a3b8;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background-color: var(--color-bg);
+  color: var(--color-text);
+  font-family: 'Outfit', sans-serif;
+  min-height: 100vh;
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  overflow-x: hidden;
+  overflow-y: auto;
+  padding: 20px;
+  background-image: 
+    radial-gradient(circle at 20% 30%, rgba(192, 132, 252, 0.15) 0%, transparent 40%),
+    radial-gradient(circle at 80% 70%, rgba(34, 211, 238, 0.15) 0%, transparent 40%);
+}
+
+.arcade-container {
+  width: 100%;
+  max-width: 1200px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 30px;
+  flex-grow: 1;
+  justify-content: space-between;
+}
+
+.arcade-header {
+  position: relative;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  gap: 15px;
+  padding-top: 10px;
+}
+
+.marquee {
+  background-color: #030105;
+  border: 4px solid var(--color-neon-purple);
+  padding: 30px 40px;
+  border-radius: 12px;
+  width: 100%;
+  max-width: 600px;
+  margin: 0 auto;
+  box-shadow: 
+    0 0 20px rgba(192, 132, 252, 0.5),
+    inset 0 0 15px rgba(192, 132, 252, 0.3);
+  text-shadow: 0 0 10px rgba(244, 114, 182, 0.8);
+  transform: perspective(600px) rotateX(10deg);
+}
+
+.marquee-title {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 3rem;
+  font-weight: 900;
+  background: linear-gradient(135deg, var(--color-neon-pink), var(--color-neon-purple));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  margin-bottom: 10px;
+  letter-spacing: 2px;
+}
+
+.marquee-subtitle {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 1rem;
+  color: var(--color-neon-cyan);
+  text-shadow: 0 0 8px rgba(34, 211, 238, 0.8);
+  letter-spacing: 4px;
+}
+
+.coin-indicator {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 0.9rem;
+  color: #fbbf24;
+  text-shadow: 0 0 5px rgba(251, 191, 36, 0.6);
+  letter-spacing: 2px;
+}
+
+.animate-pulse {
+  animation: pulse 1.5s infinite alternate;
+}
+
+@keyframes pulse {
+  0% { opacity: 0.3; }
+  100% { opacity: 1; }
+}
+
+/* Grilla de Juegos */
+.games-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 20px;
+  width: 100%;
+  perspective: 1000px;
+}
+
+@media (min-width: 600px) {
+  .games-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 900px) {
+  .games-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+.game-card {
+  background-color: var(--color-panel);
+  border-radius: 16px;
+  overflow: hidden;
+  position: relative;
+  text-decoration: none;
+  color: inherit;
+  display: flex;
+  flex-direction: column;
+  transition: transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1), box-shadow 0.3s ease;
+  cursor: pointer;
+}
+
+.card-border {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  border-radius: 16px;
+  border: 2px solid transparent;
+  pointer-events: none;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.card-content {
+  padding: 40px 30px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 20px;
+  height: 100%;
+}
+
+.game-icon {
+  font-size: 4rem;
+  margin-bottom: 10px;
+  filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.2));
+  transition: transform 0.3s ease;
+}
+
+.game-title {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 1.2rem;
+  letter-spacing: 1px;
+}
+
+.game-desc {
+  font-size: 1rem;
+  color: var(--color-text-muted);
+  line-height: 1.6;
+  flex-grow: 1;
+}
+
+/* Estado Activo */
+.active-card {
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+}
+
+.active-card .card-border {
+  border-color: rgba(192, 132, 252, 0.4);
+}
+
+.active-card:hover {
+  transform: translateY(-8px) scale(1.02);
+  box-shadow: 
+    0 15px 35px rgba(0, 0, 0, 0.6),
+    0 0 25px rgba(192, 132, 252, 0.4);
+}
+
+.active-card:hover .card-border {
+  border-color: var(--color-neon-purple);
+  box-shadow: inset 0 0 10px rgba(192, 132, 252, 0.2);
+}
+
+.active-card:hover .game-icon {
+  transform: scale(1.1) rotate(5deg);
+}
+
+.active-card .game-title {
+  color: var(--color-neon-purple);
+  text-shadow: 0 0 5px rgba(192, 132, 252, 0.4);
+}
+
+.play-tag {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 0.8rem;
+  background: linear-gradient(90deg, var(--color-neon-purple), var(--color-neon-pink));
+  color: #fff;
+  padding: 10px 20px;
+  border-radius: 8px;
+  letter-spacing: 1px;
+  box-shadow: 0 4px 10px rgba(192, 132, 252, 0.4);
+  transition: box-shadow 0.3s ease;
+}
+
+.active-card:hover .play-tag {
+  box-shadow: 0 4px 15px rgba(244, 114, 182, 0.6);
+}
+
+/* Estado Bloqueado */
+.locked-card {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.locked-card .card-border {
+  border-color: rgba(255, 255, 255, 0.05);
+}
+
+.locked-card .game-title {
+  color: #64748b;
+}
+
+.locked-tag {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 0.75rem;
+  background-color: #334155;
+  color: #94a3b8;
+  padding: 8px 16px;
+  border-radius: 6px;
+  letter-spacing: 1px;
+}
+
+/* Pie de página */
+.arcade-footer {
+  text-align: center;
+  font-size: 0.9rem;
+  color: var(--color-text-muted);
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+  width: 100%;
+  padding-top: 20px;
+}
+
+@media (max-width: 768px) {
+  .marquee {
+    padding: 20px 30px;
+  }
+  .marquee-title {
+    font-size: 2rem;
+  }
+}
+
+.back-hub-wrapper {
+  margin-bottom: 10px;
+  z-index: 100;
+}
+
+.back-hub-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: rgba(0, 0, 0, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  padding: 0.6rem 1rem;
+  border-radius: 9999px;
+  color: #fff;
+  font-family: 'Outfit', sans-serif;
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  text-decoration: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  backdrop-filter: blur(8px);
+}
+
+.back-hub-btn:hover {
+  background: #fff;
+  color: #000;
+  border-color: #fff;
+}
+
+/* Layout adaptativo sin scroll en pantallas medianas/grandes */
+@media (min-width: 769px) and (min-height: 500px) {
+  body {
+    height: 100vh;
+    height: 100dvh;
+    overflow: hidden;
+    padding: 20px;
+    justify-content: center;
+  }
+
+  .arcade-container {
+    height: 100%;
+    gap: 20px;
+    justify-content: space-between;
+  }
+
+  .arcade-header {
+    gap: 10px;
+    padding-top: 0;
+  }
+
+  .back-hub-wrapper {
+    position: absolute;
+    left: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    margin-bottom: 0;
+  }
+
+  .marquee {
+    padding: 15px 30px;
+    max-width: 500px;
+  }
+
+  .marquee-title {
+    font-size: 2.2rem;
+    margin-bottom: 5px;
+  }
+
+  .marquee-subtitle {
+    font-size: 0.8rem;
+  }
+
+  .coin-indicator {
+    font-size: 0.8rem;
+  }
+
+  .games-grid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+    flex-grow: 1;
+    min-height: 0;
+    align-items: stretch;
+  }
+
+  .game-card {
+    height: 100%;
+  }
+
+  .card-content {
+    padding: 20px 15px;
+    gap: 12px;
+    justify-content: space-between;
+  }
+
+  .game-icon {
+    font-size: 3rem;
+    margin-bottom: 0;
+  }
+
+  .game-title {
+    font-size: 1.05rem;
+  }
+
+  .game-desc {
+    font-size: 0.85rem;
+    line-height: 1.4;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-grow: 1;
+    margin-bottom: 5px;
+  }
+
+  .play-tag, .locked-tag {
+    padding: 8px 16px;
+    font-size: 0.75rem;
+  }
+
+  .arcade-footer {
+    padding-top: 10px;
+    margin-top: 0;
+  }
+}
+
